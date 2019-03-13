@@ -131,9 +131,6 @@ ENV SHELL /bin/bash
 # Fix permissions
 RUN chmod -R a+rwx $DATA_DIR
 
-# create a user
-RUN useradd -m -U grass
-
 # declare data volume late so permissions apply
 VOLUME $DATA_DIR
 WORKDIR $DATA_DIR
@@ -156,7 +153,6 @@ RUN apt-get install -y gtk2-engines-pixbuf
 RUN mkdir /code/saga-gis && \
     wget -nv --no-check-certificate https://cfhcable.dl.sourceforge.net/project/saga-gis/SAGA%20-%207/SAGA%20-%207.2.0/saga-7.2.0.tar.gz && \
     tar xzf saga-7.2.0.tar.gz -C /code/saga-gis --strip-components=1 && rm saga-7.2.0.tar.gz
-
 RUN apt-get install -y libwxgtk3.0-dev libtiff5-dev libgdal-dev libproj-dev \
     libexpat-dev wx-common libogdi3.2-dev unixodbc-dev
 RUN cd /code/saga-gis \
