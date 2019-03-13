@@ -184,6 +184,20 @@ RUN rm /usr/share/xfce4/helpers/debian-sensible-browser.desktop
 RUN add-apt-repository --yes ppa:jonathonf/firefox-esr && apt-get update
 RUN apt-get remove -y --purge firefox && apt-get install -y firefox-esr
 
+# Install iCommands and iRODS stuff
+# Install the icommands, curl, and wget
+RUN apt-get update \
+    && apt-get install -y lsb wget gnupg apt-transport-https python-requests curl \
+    && apt-get clean \
+    && rm -rf /usr/lib/apt/lists/*
+
+RUN wget -qO - https://packages.irods.org/irods-signing-key.asc | apt-key add - \
+    && echo "deb [arch=amd64] https://packages.irods.org/apt/ xenial main" | sudo tee /etc/apt/sources.list.d/renci-irods.list \
+    && apt-get update \
+    && apt-get install -y irods-icommands \
+    && apt-get clean \
+    && rm -rf /usr/lib/apt/lists/*
+
 ## Environment and Desktop stuff
 ENV USER qgis_user
 ENV PASSWORD qgis
