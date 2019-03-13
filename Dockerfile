@@ -1,4 +1,4 @@
-FROM consol/ubuntu-xfce-vnc
+FROM tswetnam/ubuntu-xfce-vnc:18.04
 
 LABEL authors="Tyson L Swetnam"
 LABEL maintainer="tswetnam@cyverse.org"
@@ -13,8 +13,8 @@ USER root
 
 # GDAL, GEOS, GRASS, QGIS, SAGA-GIS dependencies
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends --no-install-suggests \
-        build-essential \
+    && apt-get install -y build-essential software-properties-common \
+    && apt-get update && apt-get install -y --no-install-recommends --no-install-suggests \
         libblas-dev \
         libbz2-dev \
         libcairo2-dev \
@@ -46,7 +46,7 @@ RUN apt-get update \
         g++ \
         gettext \
         gdal-bin \
-	      git \
+        git \
         libfftw3-bin \
         make \
         ncurses-bin \
@@ -62,17 +62,16 @@ RUN apt-get update \
         python-pil \
         python-ply \
         python-requests \
-        software-properties-common \
         sqlite3 \
         subversion \
         sudo \
         wget \
-	      unixodbc-dev \
+        unixodbc-dev \
         xfce4-terminal \
         zlib1g-dev \
-    && apt-get autoremove \
-    && apt-get clean && \
-    mkdir -p $DATA_DIR
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && mkdir -p $DATA_DIR
 
 RUN echo LANG="en_US.UTF-8" > /etc/default/locale
 ENV LANG C.UTF-8
@@ -82,8 +81,8 @@ ENV LC_ALL C.UTF-8
 RUN mkdir -p /code/grass
 
 # add GRASS source repository files to the image
-RUN wget -nv --no-check-certificate https://grass.osgeo.org/grass74/source/grass-7.4.4.tar.gz \
-	  && tar xzf grass-7.4.4.tar.gz -C /code/grass --strip-components=1
+RUN wget -nv --no-check-certificate https://grass.osgeo.org/grass76/source/grass-7.6.0.tar.gz \
+	  && tar xzf grass-7.6.0.tar.gz -C /code/grass --strip-components=1
 
 WORKDIR /code/grass
 
@@ -143,38 +142,44 @@ WORKDIR $DATA_DIR
 RUN rm -rf /code/grass
 
 # once everything is built, install a couple of GRASS extensions
-RUN grass74 -text -c epsg:3857 ${PWD}/mytmp_wgs84 -e && \
-    echo "g.extension -s extension=r.sun.mp ; g.extension -s extension=r.sun.hourly ; g.extension -s extension=r.sun.daily" | grass74 -text ${PWD}/mytmp_wgs84/PERMANENT
-
-# Install CCTOOLS from Github
-RUN apt-get install -y git libperl-dev ca-certificates
-RUN cd /tmp && git clone https://github.com/cooperative-computing-lab/cctools.git -v
-RUN cd /tmp/cctools && \
-    ./configure --prefix=/opt/eemt --with-zlib-path=/usr/lib/x86_64-linux-gnu && \
-    make clean && \
-    make install && \
-    export PATH=$PATH:/opt/eemt
-
-#remove temp build dir to reduce contianer size
-RUN rm -rf /tmp/cctools
+RUN grass -text -c epsg:3857 ${PWD}/mytmp_wgs84 -e && \
+    echo "g.extension -s extension=r.sun.mp ; g.extension -s extension=r.sun.hourly ; g.extension -s extension=r.sun.daily" | grass -text ${PWD}/mytmp_wgs84/PERMANENT
 
 # Install SAGA-GIS binary
-RUN apt-get install -y software-properties-common && \
-    add-apt-repository ppa:ubuntugis/ubuntugis-unstable && \
-    apt-get -y update && \
-    apt-get install -y saga
+#RUN apt-get install -y software-properties-common && \
+#    add-apt-repository ppa:ubuntugis/ubuntugis-unstable && \
+#    apt-get -y update && \
+#    apt-get install -y saga
+
+# Compile SAGA-GIS 7.2.0 
+RUN apt-get install -y gtk2-engines-pixbuf
+RUN mkdir /code/saga-gis && \
+    wget -nv --no-check-certificate https://cfhcable.dl.sourceforge.net/project/saga-gis/SAGA%20-%207/SAGA%20-%207.2.0/saga-7.2.0.tar.gz && \
+    tar xzf saga-7.2.0.tar.gz -C /code/saga-gis --strip-components=1 && rm saga-7.2.0.tar.gz
+
+RUN apt-get install -y libwxgtk3.0-dev libtiff5-dev libgdal-dev libproj-dev \
+    libexpat-dev wx-common libogdi3.2-dev unixodbc-dev
+RUN cd /code/saga-gis \
+        && ./configure \
+        && make -j 12 \
+        && make install
 
 # Install QGIS Latest LTR Desktop binary
-RUN wget -O - https://qgis.org/downloads/qgis-2017.gpg.key | gpg --import \
-    && gpg --fingerprint CAEB3DC3BDF7FB45 \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-key CAEB3DC3BDF7FB45
-    
-RUN echo "deb https://qgis.org/ubuntu-ltr bionic main" >> /etc/apt/sources.list \ 
-    && echo "deb-src https://qgis.org/ubuntu-ltr bionic main" >> /etc/apt/sources.list \
-    && apt-get update && apt-get install -y qgis python-qgis qgis-plugin-grass
+RUN apt-get -y update && apt-get -f install \
+    && echo "deb https://qgis.org/ubuntu bionic main" >> /etc/apt/sources.list \
+    && echo "deb-src https://qgis.org/ubuntu bionic main" >> /etc/apt/sources.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-key CAEB3DC3BDF7FB45 
 
-# create a user
-RUN useradd -m -U qgis_user
+# Install QGIS now
+RUN apt-get -y update \
+    && apt-get install -y \
+        python-qgis-common \
+        python-qgis \
+        qgis-plugin-grass \
+        qgis-providers \
+        qgis \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 #### Remote Desktop Stuff
 
@@ -205,7 +210,8 @@ ADD ./config/xfce4 .config/xfce4
 ADD ./install/chromium-wrapper install/chromium-wrapper
 
 USER root
-RUN chown -R qgis_user:qgis_user .config Desktop install
+
+#RUN chown -R qgis_user:qgis_user .config Desktop install
 
 ADD ./install/vnc_startup.sh /dockerstartup/vnc_startup.sh
 RUN chmod a+x /dockerstartup/vnc_startup.sh
