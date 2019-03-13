@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=QGIS
+GenericName=GIS Suite
+Comment=Explore, analyze, and visualize your GIS data
+Exec=/usr/bin/qgis
+Icon=/usr/share/qgis/images/icons/qgis-icon-60x60.png
+Terminal=false
+MimeType=application/x-extension-ows;
+Categories=Science;Education;DataVisualization;
+Keywords=GIS;Scientific Visualization;Statistical Analysis;

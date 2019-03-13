@@ -198,16 +198,16 @@ USER qgis_user
 WORKDIR ${HOME}
 
 # Icon and Desktop Stuff
-#ADD ./icons/qgis.png /usr/share/backgrounds/images/qgis.png
-#ADD ./qgis/qgis-canvas.desktop Desktop/qgis-canvas.desktop
+ADD ./qgis/qgis-canvas.desktop Desktop/qgis-canvas.desktop
+ADD ./qgis/vice_wallpaper_blank-01.jpg /usr/share/backgrounds/images/vice.png
 
 # XFCE configs
 ADD ./config/xfce4 .config/xfce4
 ADD ./install/chromium-wrapper install/chromium-wrapper
 
 USER root
-
-#RUN chown -R qgis_user:qgis_user .config Desktop install
+RUN chown -R qgis_user:qgis_user .config Desktop install
+RUN chmod +x /home/qgis_user/Desktop/qgis-canvas.desktop
 
 ADD ./install/vnc_startup.sh /dockerstartup/vnc_startup.sh
 RUN chmod a+x /dockerstartup/vnc_startup.sh
@@ -216,6 +216,9 @@ USER qgis_user
 
 ENV VNC_RESOLUTION 1920x1080
 ENV VNC_PW qgis
+
+## New Desktop background
+# RUN xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorVNC-0/workspace0/last-image -s "/usr/share/backgrounds/images/vice.png"
 
 RUN cp /headless/wm_startup.sh ${HOME}
 
