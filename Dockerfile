@@ -214,6 +214,7 @@ WORKDIR ${HOME}
 # Icon and Desktop Stuff
 ADD ./qgis/qgis-canvas.desktop Desktop/qgis-canvas.desktop
 ADD ./qgis/vice_wallpaper_blank-01.jpg /usr/share/backgrounds/images/vice.png
+ADD ./qgis/vice_wallpaper_retro.jpg /usr/share/backgrounds/images/vice_retro.png
 
 # XFCE configs
 ADD ./config/xfce4 .config/xfce4
@@ -228,7 +229,7 @@ RUN chmod a+x /dockerstartup/vnc_startup.sh
 
 USER qgis_user
 
-ENV VNC_RESOLUTION 1920x1080
+ENV VNC_RESOLUTION 1920x1200
 ENV VNC_PW qgis
 
 ## New Desktop background
