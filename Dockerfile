@@ -207,6 +207,12 @@ RUN useradd -m -s /bin/bash ${USER}
 RUN echo "${USER}:${PASSWORD}" | chpasswd
 RUN gpasswd -a ${USER} sudo
 
+RUN chown -R qgis_user:qgis_user .config Desktop install
+RUN chmod +x /home/qgis_user/Desktop/qgis-canvas.desktop
+
+ADD ./install/vnc_startup.sh /dockerstartup/vnc_startup.sh
+RUN chmod a+x /dockerstartup/vnc_startup.sh
+
 USER qgis_user
 
 WORKDIR ${HOME}
@@ -219,15 +225,6 @@ ADD ./qgis/vice_wallpaper_retro.jpg /usr/share/backgrounds/images/vice_retro.png
 # XFCE configs
 ADD ./config/xfce4 .config/xfce4
 ADD ./install/chromium-wrapper install/chromium-wrapper
-
-USER root
-RUN chown -R qgis_user:qgis_user .config Desktop install
-RUN chmod +x /home/qgis_user/Desktop/qgis-canvas.desktop
-
-ADD ./install/vnc_startup.sh /dockerstartup/vnc_startup.sh
-RUN chmod a+x /dockerstartup/vnc_startup.sh
-
-USER qgis_user
 
 ENV VNC_RESOLUTION 1920x1200
 ENV VNC_PW qgis
