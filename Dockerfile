@@ -96,7 +96,6 @@ ENV CFLAGS "$MYCFLAGS"
 ENV CXXFLAGS "$MYCXXFLAGS"
 
 # Configure, compile and install GRASS GIS
-ENV NUMTHREADS=14
 RUN cd /code/grass && ./configure \
     --enable-largefile \
     --with-cxx \
@@ -116,7 +115,7 @@ RUN cd /code/grass && ./configure \
     --with-opengl-libs=/usr/include/GL \
     --with-openmp \
     --enable-64bit \
-    && make -j $NUMTHREADS && make install && ldconfig
+    && make -j 1 && make install && ldconfig
    
 # enable simple grass command regardless of version number
 RUN ln -s /usr/local/bin/grass* /usr/local/bin/grass
