@@ -1,4 +1,7 @@
 # qgis-vice
+
+Base image: https://github.com/tyson-swetnam/ubuntu-xfce-vnc
+
 Docker build for running QGIS in CyVerse VICE
 
 To run locally:
